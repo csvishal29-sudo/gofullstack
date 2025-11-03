@@ -1,0 +1,30 @@
+[
+  {
+    "Id": 1,
+    "Issue Type": "Garbage",
+    "Report Date": "28-10-2025",
+    "Location": "Bareilly",
+    "Status": "Pending"
+  },
+  {
+    "Id": 2,
+    "Issue Type": "Water Leakage",
+    "Report Date": "15-10-2025",
+    "Location": "Moradabad",
+    "Status": "Completed"
+  },
+  {
+    "Id": 3,
+    "Issue Type": "Road Damage",
+    "Report Date": "10-10-2025",
+    "Location": "Lucknow",
+    "Status": "Pending"
+  },
+  {
+    "Id": 4,
+    "Issue Type": "Street Light",
+    "Report Date": "02-10-2025",
+    "Location": "Kanpur",
+    "Status": "Completed"
+  }
+]
