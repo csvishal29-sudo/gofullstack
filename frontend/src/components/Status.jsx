@@ -74,7 +74,7 @@ const Status = () => {
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
           <div className="flex items-center gap-2">
             <IoIosArrowRoundBack
-              size={45}
+              size={40}
               className="text-[#4dff1f] drop-shadow-lg cursor-pointer hover:text-[#3da81dff] transition-colors duration-200"
               onClick={() => navigate("/")}
             />
