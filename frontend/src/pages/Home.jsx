@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux';
-import UserDashboard from '../components/userDashboard';
+import UserDashboard from '../components/UserDashboard';
 
 
 function Home()  {
