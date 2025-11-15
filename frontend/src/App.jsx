@@ -5,7 +5,7 @@ import SignUp from './pages/SignUp.jsx'
 import ForgotPasword from './pages/ForgotPassword.jsx'
 import useGetCurrentUser from './hooks/useGetCurrentUser.jsx'
 import { useSelector } from 'react-redux'
-export const serverURL="http://localhost:3030"
+export const serverURL="https://gocity-backend.onrender.com"
 import Home from './pages/Home.jsx'
 import { Navigate } from 'react-router-dom'
 import useGetCity from './hooks/useGetCity.jsx'
