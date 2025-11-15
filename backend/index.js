@@ -21,8 +21,8 @@ const port = process.env.PORT || 4040;
 
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
-        ? ['https://your-frontend-domain.vercel.app']
-        : ['http://localhost:5173'],
+        ? ['https://gocity.onrender.com']
+        : ['https://gocity.onrender.com'],
     credentials: true,
 }));
 
