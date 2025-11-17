@@ -20,11 +20,13 @@ const app = express();
 const port = process.env.PORT || 4040;
 
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production' 
-        ? ['https://gocity.onrender.com']
-        : ['https://gocity.onrender.com'],
-    credentials: true,
+    origin: [ 
+        "http://localhost:5173",
+        "https://gocity.onrender.com"
+    ],
+    credentials: true
 }));
+
 
 app.use(express.json())
 app.use(cookieParser())
@@ -49,7 +51,7 @@ app.use("/api/reports", reportRouter);
 const start = async () => {
     try{
         await connectDb();
-        app.listen(port, () => console.log(`Server running at ${port}`));
+        app.listen(port,"0.0.0.0", () => console.log(`Server running at ${port}`));
     }catch(err){
         console.error('Failed to start server due to DB connection error:', err);
         process.exit(1);
