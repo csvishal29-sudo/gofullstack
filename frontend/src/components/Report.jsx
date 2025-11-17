@@ -93,7 +93,7 @@ const Report = () => {
         photo: formData.photo, // include photo (base64 string)
       };
 
-  await axios.post("http://localhost:3030/api/reports", payload, { withCredentials: true });
+  await axios.post("https://gocity-backend.onrender.com/api/reports", payload, { withCredentials: true });
 
       setSuccessMsg("Report submitted successfully!");
       setFormData({
