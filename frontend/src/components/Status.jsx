@@ -11,7 +11,7 @@ const Status = () => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const response = await fetch("http://localhost:3030/api/reports");
+        const response = await fetch("https://gocity-backend.onrender.com/api/reports");
         const reports = await response.json();
         setData(reports.map(report => ({
           Id: report._id,
