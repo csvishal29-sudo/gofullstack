@@ -11,7 +11,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import helmet from 'helmet';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,8 +24,7 @@ const port = process.env.PORT || 4040;
 // Recommended: set FRONTEND_URL in Render env to your deployed frontend (e.g. https://gocity.onrender.com)
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-// Basic security headers
-app.use(helmet());
+
 
 // CORS: allow the frontend origin and localhost during development
 app.use(cors({
