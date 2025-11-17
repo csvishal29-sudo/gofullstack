@@ -51,7 +51,7 @@ app.use("/api/reports", reportRouter);
 const start = async () => {
     try{
         await connectDb();
-        app.listen(port,"0.0.0.0", () => console.log(`Server running at ${port}`));
+        app.listen(port,() => console.log(`Server running at ${port}`));
     }catch(err){
         console.error('Failed to start server due to DB connection error:', err);
         process.exit(1);
