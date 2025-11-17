@@ -4,7 +4,7 @@ import { IoIosArrowRoundBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import { FaCamera } from "react-icons/fa";
 
-const Report = () => {
+export default function Report() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     issueType: "",
@@ -12,7 +12,8 @@ const Report = () => {
     city: "",
     status: "Pending",
     reportDate: new Date().toISOString().split("T")[0],
-    photo: null, // new field
+    // photo will be either: null | File | dataURL string
+    photo: null,
   });
 
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -20,7 +21,7 @@ const Report = () => {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  // 📍 Fetch user city name via geolocation + reverse geocoding
+  // reverse geocode to get city
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -50,25 +51,39 @@ const Report = () => {
     }
   }, []);
 
-  // 📸 Load captured photo from localStorage
+  // load captured photo (base64) from localStorage if present
   useEffect(() => {
     const savedPhoto = localStorage.getItem("capturedPhoto");
     if (savedPhoto) {
       setPreviewUrl(savedPhoto);
+      // store as dataURL string; submit will convert to Blob/File
       setFormData((prev) => ({ ...prev, photo: savedPhoto }));
       localStorage.removeItem("capturedPhoto");
     }
   }, []);
 
-  // 🖊️ Handle input changes
+  // helper: convert dataURL (base64) to Blob
+  function dataURLToBlob(dataURL) {
+    const parts = dataURL.split(',');
+    const meta = parts[0].match(/:(.*?);/);
+    const mime = meta ? meta[1] : 'image/jpeg';
+    const bstr = atob(parts[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) u8arr[n] = bstr.charCodeAt(n);
+    return new Blob([u8arr], { type: mime });
+  }
+
+  // handle input changes and file selection
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === "photo" && files.length > 0) {
+    if (name === "photo" && files && files.length > 0) {
       const file = files[0];
       const reader = new FileReader();
       reader.onload = () => {
         setPreviewUrl(reader.result);
-        setFormData((prev) => ({ ...prev, photo: reader.result }));
+        // store the File so we can append directly to FormData
+        setFormData((prev) => ({ ...prev, photo: file }));
       };
       reader.readAsDataURL(file);
     } else {
@@ -76,7 +91,7 @@ const Report = () => {
     }
   };
 
-  // 🚀 Handle form submit
+  // submit using multipart/form-data
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -84,17 +99,43 @@ const Report = () => {
     setErrorMsg("");
 
     try {
-      const payload = {
-        issueType: formData.issueType,
-        comment: formData.comment,
-        city: formData.city,
-        status: formData.status,
-        reportDate: formData.reportDate,
-        photo: formData.photo, // include photo (base64 string)
-      };
+      const form = new FormData();
+      form.append("issueType", formData.issueType);
+      form.append("comment", formData.comment || "");
+      form.append("city", formData.city || "");
+      form.append("status", formData.status || "Pending");
+      form.append("reportDate", formData.reportDate);
 
-  await axios.post("https://gocity-backend.onrender.com/api/reports", payload, { withCredentials: true });
+      if (formData.photo) {
+        // If photo is a base64 dataURL string (from capture), convert to Blob
+        if (typeof formData.photo === "string" && formData.photo.startsWith("data:")) {
+          const blob = dataURLToBlob(formData.photo);
+          const file = new File([blob], `photo-${Date.now()}.jpg`, { type: blob.type });
+          form.append("photo", file);
+        } else if (formData.photo instanceof File) {
+          // File selected via input
+          form.append("photo", formData.photo);
+        }
+      }
 
+      // DEBUG: list form keys (values of files will be File objects)
+      for (let pair of form.entries()) {
+        // avoid printing binary content, print key + value type
+        const val = pair[1];
+        if (val instanceof File) console.log("form entry:", pair[0], "=> File(" + val.name + ")");
+        else console.log("form entry:", pair[0], "=>", val);
+      }
+
+      const res = await axios.post(
+        "https://gocity-backend.onrender.com/api/reports",
+        form,
+        {
+          withCredentials: true,
+          // DO NOT set Content-Type header — browser will set boundary automatically
+        }
+      );
+
+      console.log("server response:", res.data);
       setSuccessMsg("Report submitted successfully!");
       setFormData({
         issueType: "",
@@ -106,12 +147,12 @@ const Report = () => {
       });
       setPreviewUrl(null);
 
-      setTimeout(() => {
-        navigate("/status");
-      }, 2000);
+      setTimeout(() => navigate("/status"), 1200);
     } catch (err) {
-      console.error(err);
-      setErrorMsg("Failed to submit report. Try again later.");
+      console.error("submit error:", err);
+      const backendMsg = err.response?.data || err.response?.statusText || err.message;
+      console.error("backend message:", backendMsg);
+      setErrorMsg(typeof backendMsg === "string" ? backendMsg : JSON.stringify(backendMsg));
     } finally {
       setLoading(false);
     }
@@ -126,14 +167,10 @@ const Report = () => {
             className="text-[#3da81dff] cursor-pointer"
             onClick={() => navigate("/")}
           />
-          <h2 className="ml-10 text-2xl font-bold text-green-600">
-            Smart City Issue Report
-          </h2>
+          <h2 className="ml-10 text-2xl font-bold text-green-600">Smart City Issue Report</h2>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          
-          {/* Camera Icon */}
           <div className="flex justify-start">
             <FaCamera
               size={40}
@@ -142,14 +179,9 @@ const Report = () => {
             />
           </div>
 
-          {/* Photo Preview */}
           {previewUrl && (
             <div className="relative">
-              <img
-                src={previewUrl}
-                alt="Captured"
-                className="rounded-xl border shadow-md"
-              />
+              <img src={previewUrl} alt="Captured" className="rounded-xl border shadow-md" />
               <button
                 type="button"
                 onClick={() => {
@@ -163,11 +195,8 @@ const Report = () => {
             </div>
           )}
 
-          {/* Manual file upload */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Or Upload Photo
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Or Upload Photo</label>
             <input
               type="file"
               name="photo"
@@ -176,16 +205,11 @@ const Report = () => {
               className="mt-1 block w-full text-sm text-gray-700"
             />
           </div>
-          
 
-          <div className="text-sm text-gray-600">
-            📍 Location: {formData.city || "Fetching..."}
-          </div>
+          <div className="text-sm text-gray-600">📍 Location: {formData.city || "Fetching..."}</div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Date
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Date</label>
             <input
               type="date"
               name="reportDate"
@@ -229,19 +253,9 @@ const Report = () => {
           </button>
         </form>
 
-        {successMsg && (
-          <div className="text-green-600 text-center font-semibold">
-            {successMsg}
-          </div>
-        )}
-        {errorMsg && (
-          <div className="text-red-500 text-center font-semibold">
-            {errorMsg}
-          </div>
-        )}
+        {successMsg && <div className="text-green-600 text-center font-semibold">{successMsg}</div>}
+        {errorMsg && <div className="text-red-500 text-center font-semibold">{errorMsg}</div>}
       </div>
     </div>
   );
-};
-
-export default Report;
+}
