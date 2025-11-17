@@ -5,7 +5,7 @@ import { FaRegEyeSlash } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-export const serverUrl="http://localhost:3030"
+export const serverUrl="https://gocity-backend.onrender.com"
 import { useDispatch } from 'react-redux';
 import { setUserData } from '../redux/userSlice';
 
